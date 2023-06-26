@@ -6,23 +6,28 @@ from django.http import HttpResponse
 
 
 def register(request):
+    register_page = 'register_page.html'
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
         password1 = request.POST['password1']
         password2 = request.POST['password2']
 
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "username already taken. please try with different username.")
+            return render(request, register_page)
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email is already registered. Login using your credentials.")
+            return render(request, register_page)
         if password1 != password2:
             messages.error(request, "Passwords didn't match!! Please try again.")
-            return render(request, 'register_page.html')
-
+            return render(request, register_page)
         else:
-            user = User.objects.create_user(username=username, password=password1, email=email)
+            User.objects.create_user(username=username, password=password1, email=email)
             messages.info(request, "Login with your credentials")
             return redirect('')
-
     else:
-        return render(request, 'register_page.html')
+        return render(request, register_page)
 
 
 def sign_in(request):
