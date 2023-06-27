@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
 
@@ -38,12 +39,20 @@ def sign_in(request):
         user = authenticate(username=username, password=password)
         if user:
             login(request, user)
-            return render(request, 'homepage.html', context={'username': username})
+            request.session['username'] = username
+            return redirect('home')
         else:
             messages.error(request, "No user exists")
             return render(request, sign_in_page)
 
     return render(request, sign_in_page)
+
+
+@login_required(login_url='sign_in')
+def home(request):
+    homepage = 'homepage.html'
+    username = request.session['username']
+    return render(request, homepage, context={'username': username})
 
 
 def sign_out(request):
